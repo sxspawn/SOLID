@@ -1,33 +1,51 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
-        HashMap<String, Integer> products = new HashMap<>();
-        products.put("Хлеб", 56);
-        products.put("Масло", 153);
-        products.put("Колбаса", 211);
-        products.put("Пирожок", 45);
+        List<Product> products = new ArrayList<>();
+        products.add(new Product("Хлеб", 56));
+        products.add(new Product("Масло", 153));
+        products.add(new Product("Колбаса", 211));
+        products.add(new Product("Пирожок", 45));
 
         System.out.println("В МАГАЗИНЕ В НАЛИЧИИ");
-        for (Map.Entry<String, Integer> productAndPrice : products.entrySet()) {
-            System.out.println(productAndPrice.getKey() + " за " + productAndPrice.getValue() + " руб./шт.");
+        int i = 0;
+        for (Product product : products) {
+            System.out.printf("%s. %s за %s руб./шт.%n", ++i, product.getTitle(), product.getPrice());
         }
 
-        System.out.println("Введите два слова: название товара и количество. Или end");
         Scanner scanner = new Scanner(System.in);
-        Purchase purchase = new Purchase();
+        Basket basket = new Basket();
         while (true) {
-            String line = scanner.nextLine();
-            if ("end".equals(line)) break;
-            String[] parts = line.split(" ");
-            String product = parts[0];
-            int count = Integer.parseInt(parts[1]);
-            purchase.addPurchase(product, count);
+            System.out.println("Выберите номер товара и его количество через пробел.\n" + "Для завершения программы и подсчета корзины введите: \"0\" и нажмите Enter.");
+            String input = scanner.nextLine();
+            if ("0".equals(input)) {
+                System.out.println("Программа завершена!");
+                break;
+            }
+
+            try {
+                String[] parts = input.split(" ", 2);
+                int productId = Integer.parseInt(parts[0]) - 1;
+                int count = Integer.parseInt(parts[1]);
+
+                if (productId >= products.size()) {
+                    throw new IllegalArgumentException("Нет такого продукта");
+                }
+                if (count <= 0) {
+                    throw new IllegalArgumentException("Количество должно быть больше 0");
+                }
+
+                basket.addPurchase(new Purchase(productId, count));
+            } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e) {
+                System.out.println("Неправильный формат ввода");
+            }
         }
-        long sum = purchase.sum(products);
-        System.out.println("ИТОГО: " + sum);
+        scanner.close();
+
+        basket.calculateBasket(products);
     }
 }
